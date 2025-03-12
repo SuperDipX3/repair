@@ -1,16 +1,16 @@
-// backend/server.js
-import express from 'express';
-import cors from 'cors';
+import express from "express";
+import cors from "cors";
+import authRoutes from "./routes/auth.js"; // ✅ ต้องใส่ `.js`
+
 const app = express();
-const port = 5000;
 
-app.use(cors());
+// Middleware
 app.use(express.json());
+app.use(cors());
 
-app.get('/api', (req, res) => {
-  res.json({ message: 'Hello from backend1!' });
-});
+// Routes
+app.use("/api/auth", authRoutes);
 
-app.listen(port, () => {
-  console.log(`Backend server running at http://localhost:${port}`);
-});
+// Start Server
+const PORT = 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

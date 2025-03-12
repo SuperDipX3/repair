@@ -8,7 +8,7 @@ export default function Home() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const res = await axios.get('http://localhost:5000/api');
+      const res = await axios.get('http://localhost:5000/');
       setMessage(res.data.message);
     };
     fetchData();
