@@ -21,7 +21,7 @@ export default function LoginPage() {
       });
 
       if (response.data.success) {
-        alert("Login Successful");
+        alert(response.data.datauser[0].email);
         router.push("/dashboard"); // Redirect ไปหน้า Dashboard
       } else {
         setErrorMessage("Invalid credentials");
