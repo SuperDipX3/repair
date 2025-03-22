@@ -3,11 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation"; // ใช้สำหรับการ redirect
 import axios from "axios";
+import Link from "next/link";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+  const [SuccessMsg, setSuccessMsg] = useState("");
+  const [ErrMsg, setErrMsg] = useState("");
   const router = useRouter();
 
   const handleSubmit = async (e) => {
@@ -15,21 +17,32 @@ export default function LoginPage() {
 
     try {
       // ส่งข้อมูล login ไปที่ Backend API
-      const response = await axios.post("http://localhost:5000/api/auth/login", {
+      const response = await axios.post("http://localhost:1410/api/auth/login", {
         email,
         password,
       });
 
-      if (response.data.success == true) {
-        router.push("/dashboard");
-      } else if (response.data.success == false) {
-        setErrorMessage(response.data.message);
+
+      if (response.data.success) {
+     // เก็บ token ใน localStorage
+                const token = response.data.token;
+                localStorage.setItem("token", token);
+
+                // แสดงข้อความสำเร็จ
+                setSuccessMsg(response.data.message);
+                setErrMsg(""); // เคลียร์ error message
+
+                // ใช้ setTimeout เพื่อเปลี่ยนไปยังหน้า dashboard หลังจาก 2 วินาที
+                setTimeout(() => {
+                    router.push("/dashboard");
+                }, 2000);
       } else {
-        setErrorMessage("Invalid credentials");
+        setErrMsg(response.data.message || "Invalid credentials");
+        setSuccessMsg("");
       }
     } catch (error) {
-      console.error("Login error:", error);
-      setErrorMessage("Invalid email or password");
+      console.error("Register error:", error);
+      setErrMsg("เกิดข้อผิดพลาดในการเข้าสู่ระบบ");
     }
   };
 
@@ -45,7 +58,8 @@ export default function LoginPage() {
             id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full h-9 px-2 py-1 text-sm text-gray-700 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-200"
+            className="w-full h-9 px-2 py-1 text-sm text-gray-600 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-200"
+            placeholder="Enter your email..."
             required
           />
         </div>
@@ -57,16 +71,24 @@ export default function LoginPage() {
             id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full h-9 px-2 py-1 text-sm text-gray-700 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-200"
+            className="w-full h-9 px-2 py-1 text-sm text-gray-600 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-200"
+             placeholder="Enter your password..."
             required
           />
         </div>
 
         <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600">
-          SIGN IN
+      Sign in
         </button>
+        <hr className="border-gray-300 my-4" />
+        <Link href="/register">
+          <button type="button" className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-600 mt-1">
+          Create a new account
+          </button>
+        </Link>
 
-        {errorMessage && <p className="text-red-500 text-sm mt-4">{errorMessage}</p>}
+        {ErrMsg && <p className="text-red-500 text-sm mt-4">{ErrMsg}</p>}
+        {SuccessMsg && <p className="text-green-500 text-sm mt-4">{SuccessMsg}</p>}
       </form>
     </div>
   );

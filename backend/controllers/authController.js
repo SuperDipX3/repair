@@ -1,40 +1,40 @@
-import { getUserLogin , getUserRegister ,createUser } from "../models/userModel.js";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
+import dotenv from "dotenv";
+import { getUser, createUser } from "../models/userModel.js";
 
-export const processLogin = async (req, res) => {
-    const { email, password } = req.body;
+dotenv.config();
+
+// ✅ Register User
+export const register = async (req, res) => {
     try {
-        const user = await getUserLogin(email, password);
-        // res.json({user});
-        if (user.length !== 0) {
-            res.json({ success: true, message: "Login successful" });
-        } else {
-            res.json({ success: false, message: "* ไม่พบบัญชีผู้ใช้งาน"});
-        }
+        const { email, password } = req.body;
 
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Internal Server Error" });
+        if (await getUser(email)) {
+            return res.json({ success: false, message: "อีเมลนี้ได้ลงทะเบียนไว้แล้ว" });
+        } else {
+            await createUser(email, password);
+            return res.json({ success: true, message: "ลงทะเบียนผู้ใช้สำเร็จ" });
+        }
+    } catch (error) {
+        res.status(500).json({ success: true, message: error.message });
     }
 };
 
-export const processRegister = async (req, res) => {
-    const { email, password } = req.body;
+// ✅ Login User
+export const login = async (req, res) => {
     try {
-        const user = await getUserRegister(email);
-        if (user.length === 0) {
-            res.json({ success: true, message: "บัญชีผู้ใช้งานใช้ได้" });
-        } else {
-            res.json({ success: false, message: "มีบัญชีผู้ใช้งานนี้แล้ว" });
+        const { email, password } = req.body;
+
+        const user = await getUser(email);
+        if (!user || !(await bcrypt.compare(password, user.password))) {
+            return res.json({ success: false, message: "อีเมลหรือรหัสผ่านไม่ถูกต้อง" });
         }
 
-        const userRegis = await createUser(email,password);
-        console.log(userRegis);
-        
+        const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Internal Server Error" });
+        res.json({ success: true, message: "เข้าสู่ระบบสำเร็จ", token:token });
+    } catch (error) {
+        res.status(500).json({ success: true, message: error.message });
     }
 };
-
-

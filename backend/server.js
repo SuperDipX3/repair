@@ -1,24 +1,24 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import authRoutes from "./routes/auth.js"; // ✅ ต้องใส่ `.js`
+import authRoutes from "./routes/authRoutes.js";
+import verifyTokenRoutes from "./routes/verifyTokenRoutes.js";
 
 dotenv.config();
 
 const app = express();
 
 // Middleware
-app.use(express.json());
 app.use(cors());
+app.use(express.json());
 
 // Routes
 app.use("/api/auth", authRoutes);
-app.get('/', (req, res) => {
-  res.json({ message: 'REPAIR APP' });
-});
+app.use("/api/verifyToken", verifyTokenRoutes);
+
 
 // Start Server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`🚀 Server is running on http://localhost:${PORT}`);
 });
